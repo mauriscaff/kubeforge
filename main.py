@@ -134,6 +134,8 @@ class GenerateRequest(BaseModel):
     cpu_limit: str = "500m"
     memory_limit: str = "512Mi"
     health_check_path: str = "/health"
+    generate_hpa: bool = True
+    max_replicas: int = 0
 
 
 @app.post("/generate")
@@ -178,6 +180,8 @@ async def generate(req: GenerateRequest):
         "memory_limit": req.memory_limit,
         "env_vars": req.env_vars,
         "health_check_path": req.health_check_path,
+        "generate_hpa": req.generate_hpa,
+        "max_replicas": req.max_replicas,
     }
     try:
         k8s_files = k8s_gen.generate(k8s_ctx)

@@ -25,9 +25,10 @@ def _jinja_env() -> Environment:
 def generate(context: dict) -> dict[str, str]:
     """
     context keys:
-      app_name, namespace, replicas, service_type, image_name, port,
+      app_name, namespace, language, replicas, service_type, image_name, image_tag, port,
       cpu_request, memory_request, cpu_limit, memory_limit,
-      env_vars (list[dict] with keys 'key','value'), health_check_path
+      env_vars (list[dict] with keys 'key','value'), health_check_path,
+      generate_hpa (bool), max_replicas (int, 0 = auto replicas*3)
 
     Returns dict of {filename: content}
     """
@@ -37,7 +38,19 @@ def generate(context: dict) -> dict[str, str]:
     config_vars = {e["key"]: e.get("value", "") for e in env_list if not _is_secret(e["key"])}
     secret_vars = [e["key"] for e in env_list if _is_secret(e["key"])]
 
-    ctx = {**context, "config_vars": config_vars, "secret_vars": secret_vars}
+    generate_hpa = context.get("generate_hpa", True)
+    replicas = context.get("replicas", 2)
+    max_replicas = context.get("max_replicas", 0)
+    if max_replicas == 0:
+        max_replicas = replicas * 3
+
+    ctx = {
+        **context,
+        "config_vars": config_vars,
+        "secret_vars": secret_vars,
+        "generate_hpa": generate_hpa,
+        "max_replicas": max_replicas,
+    }
 
     files: dict[str, str] = {}
     files["deployment.yaml"] = env.get_template("deployment.j2").render(**ctx)
@@ -48,6 +61,9 @@ def generate(context: dict) -> dict[str, str]:
 
     if secret_vars:
         files["secret.yaml"] = env.get_template("secret.j2").render(**ctx)
+
+    if generate_hpa:
+        files["hpa.yaml"] = env.get_template("hpa.j2").render(**ctx)
 
     files["kustomization.yaml"] = env.get_template("kustomization.j2").render(**ctx)
 

@@ -12,6 +12,9 @@ resources:
 {% if secret_vars %}
   - secret.yaml
 {% endif %}
+{% if generate_hpa %}
+  - hpa.yaml
+{% endif %}
 
 commonLabels:
   app: {{ app_name }}
