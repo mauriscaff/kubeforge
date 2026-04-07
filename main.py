@@ -277,14 +277,16 @@ async def _prepare_source(
                 "Para pastas locais, use source_type='folder'."
             )
         try:
-            import git as gitpython
-            loop = asyncio.get_event_loop()
-            await loop.run_in_executor(
-                None,
-                lambda: gitpython.Repo.clone_from(git_url, project_dir, depth=1, no_single_branch=True),
+            proc = await asyncio.create_subprocess_exec(
+                "git", "clone", "--depth=1", git_url, project_dir,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
             )
-        except Exception as e:
-            raise ValueError(f"Falha ao clonar o repositório: {e}")
+            _, stderr = await asyncio.wait_for(proc.communicate(), timeout=60)
+            if proc.returncode != 0:
+                raise ValueError(f"Falha ao clonar: {stderr.decode()}")
+        except asyncio.TimeoutError:
+            raise ValueError("Timeout ao clonar o repositório. Verifique a URL e sua conexão.")
         return project_dir
 
     else:
