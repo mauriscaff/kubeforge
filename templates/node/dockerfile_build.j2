@@ -3,10 +3,12 @@ FROM {{ base_image }} AS builder
 
 WORKDIR /app
 
+RUN addgroup --system appgroup && adduser --system --ingroup appgroup {{ user }}
+
 COPY package*.json ./
 RUN {{ package_manager }} install --frozen-lockfile
 
-COPY . .
+COPY --chown={{ user }}:appgroup . .
 RUN {{ build_command }}
 
 # Stage 2: Production
@@ -16,11 +18,19 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
+RUN addgroup --system appgroup && adduser --system --ingroup appgroup {{ user }}
+
 COPY --from=builder /app/package*.json ./
 RUN {{ package_manager }} install --frozen-lockfile --production
 
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/public ./public
+{% if framework == "nextjs" %}
+COPY --chown={{ user }}:appgroup --from=builder /app/.next ./.next
+COPY --chown={{ user }}:appgroup --from=builder /app/public ./public
+{% elif framework == "nestjs" %}
+COPY --chown={{ user }}:appgroup --from=builder /app/dist ./dist
+{% else %}
+COPY --chown={{ user }}:appgroup --from=builder /app/dist ./dist
+{% endif %}
 
 EXPOSE {{ port }}
 
