@@ -2,15 +2,18 @@ FROM {{ base_image }}
 
 WORKDIR /app
 
-# Install dependencies first (layer cache optimization)
+# Create non-root user before any COPY
+RUN addgroup --system appgroup && adduser --system --ingroup appgroup {{ user }}
+
+# Install dependencies (layer cache optimization)
 COPY package*.json ./
 RUN {{ package_manager }} install --frozen-lockfile
 
-COPY . .
+# Copy source with correct ownership from the start
+COPY --chown={{ user }}:appgroup . .
 
 EXPOSE {{ port }}
 
-# Run as non-root user
 USER {{ user }}
 
 CMD [{{ start_command | split | map('tojson') | join(', ') }}]
