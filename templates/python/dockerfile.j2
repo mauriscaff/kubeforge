@@ -1,5 +1,10 @@
 FROM {{ base_image }}
 
+# tini como PID 1 para tratamento correto de sinais e evitar processos zumbi
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends tini \
+    && rm -rf /var/lib/apt/lists/*
+
 # Security: run as non-root
 RUN addgroup --system appgroup && adduser --system --ingroup appgroup {{ user }}
 
@@ -9,13 +14,11 @@ WORKDIR /app
 COPY requirements*.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
-
-# Change ownership
-RUN chown -R {{ user }}:appgroup /app
+COPY --chown={{ user }}:appgroup . .
 
 EXPOSE {{ port }}
 
 USER {{ user }}
 
+ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD [{{ start_command | split | map('tojson') | join(', ') }}]

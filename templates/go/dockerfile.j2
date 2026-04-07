@@ -3,6 +3,9 @@ FROM {{ build_image }} AS builder
 
 WORKDIR /app
 
+# Instala tini no builder para copiar para o scratch
+RUN apk add --no-cache tini
+
 # Cache go modules
 COPY go.mod go.sum* ./
 RUN go mod download
@@ -10,12 +13,14 @@ RUN go mod download
 COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o app .
 
-# Stage 2: Minimal runtime
+# Stage 2: Minimal runtime (scratch)
 FROM scratch
 
+# Copia tini e certificados SSL do builder
+COPY --from=builder /sbin/tini /sbin/tini
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /app/app /app
 
 EXPOSE {{ port }}
 
-ENTRYPOINT ["/app"]
+ENTRYPOINT ["/sbin/tini", "--", "/app"]

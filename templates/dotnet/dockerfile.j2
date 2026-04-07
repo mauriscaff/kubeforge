@@ -12,16 +12,19 @@ RUN dotnet publish -c Release -o /publish --no-restore
 # Stage 2: Runtime
 FROM {{ base_image }}
 
+# tini como PID 1 para tratamento correto de sinais e evitar processos zumbi
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends tini \
+    && rm -rf /var/lib/apt/lists/*
+
 RUN addgroup --system appgroup && adduser --system --ingroup appgroup {{ user }}
 
 WORKDIR /app
 
-COPY --from=builder /publish .
-
-RUN chown -R {{ user }}:appgroup /app
+COPY --chown={{ user }}:appgroup --from=builder /publish .
 
 EXPOSE {{ port }}
 
 USER {{ user }}
 
-ENTRYPOINT ["dotnet", "app.dll"]
+ENTRYPOINT ["/usr/bin/tini", "--", "dotnet", "app.dll"]

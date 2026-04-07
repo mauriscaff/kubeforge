@@ -17,20 +17,21 @@ RUN chmod +x gradlew && ./gradlew build -x test
 # Stage 2: Runtime
 FROM {{ base_image }}
 
+# tini como PID 1 para tratamento correto de sinais e evitar processos zumbi
+RUN apk add --no-cache tini
+
 RUN addgroup --system appgroup && adduser --system --ingroup appgroup {{ user }}
 
 WORKDIR /app
 
 {% if build_tool == "maven" %}
-COPY --from=builder /app/target/*.jar app.jar
+COPY --chown={{ user }}:appgroup --from=builder /app/target/*.jar app.jar
 {% else %}
-COPY --from=builder /app/build/libs/*.jar app.jar
+COPY --chown={{ user }}:appgroup --from=builder /app/build/libs/*.jar app.jar
 {% endif %}
-
-RUN chown -R {{ user }}:appgroup /app
 
 EXPOSE {{ port }}
 
 USER {{ user }}
 
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["/sbin/tini", "--", "java", "-jar", "app.jar"]

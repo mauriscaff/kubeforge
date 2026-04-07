@@ -2,6 +2,9 @@ FROM {{ base_image }}
 
 WORKDIR /app
 
+# tini como PID 1 para tratamento correto de sinais e evitar processos zumbi
+RUN apk add --no-cache tini
+
 # Create non-root user before any COPY
 RUN addgroup --system appgroup && adduser --system --ingroup appgroup {{ user }}
 
@@ -16,4 +19,5 @@ EXPOSE {{ port }}
 
 USER {{ user }}
 
+ENTRYPOINT ["/sbin/tini", "--"]
 CMD [{{ start_command | split | map('tojson') | join(', ') }}]

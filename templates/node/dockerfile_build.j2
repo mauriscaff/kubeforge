@@ -18,6 +18,9 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
+# tini como PID 1 para tratamento correto de sinais e evitar processos zumbi
+RUN apk add --no-cache tini
+
 RUN addgroup --system appgroup && adduser --system --ingroup appgroup {{ user }}
 
 COPY --from=builder /app/package*.json ./
@@ -36,4 +39,5 @@ EXPOSE {{ port }}
 
 USER {{ user }}
 
+ENTRYPOINT ["/sbin/tini", "--"]
 CMD [{{ start_command | split | map('tojson') | join(', ') }}]
