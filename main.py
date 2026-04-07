@@ -165,6 +165,7 @@ async def generate(req: GenerateRequest):
     k8s_ctx = {
         "app_name": req.app_name,
         "namespace": req.namespace,
+        "language": req.language,
         "replicas": req.replicas,
         "service_type": req.service_type,
         "image_name": req.image_name,

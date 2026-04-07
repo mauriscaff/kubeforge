@@ -42,17 +42,23 @@ spec:
                 name: {{ app_name }}-secret
 {% endif %}
 {% endif %}
+          startupProbe:
+            httpGet:
+              path: {{ health_check_path }}
+              port: {{ port }}
+            failureThreshold: {{ 30 if language == "java" else 10 }}
+            periodSeconds: {{ 10 if language == "java" else 5 }}
           livenessProbe:
             httpGet:
               path: {{ health_check_path }}
               port: {{ port }}
-            initialDelaySeconds: 30
+            initialDelaySeconds: 0
             periodSeconds: 10
             failureThreshold: 3
           readinessProbe:
             httpGet:
               path: {{ health_check_path }}
               port: {{ port }}
-            initialDelaySeconds: 10
+            initialDelaySeconds: 0
             periodSeconds: 5
       restartPolicy: Always
