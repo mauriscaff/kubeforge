@@ -52,6 +52,8 @@ def generate(context: dict) -> dict[str, str]:
         "generate_hpa": generate_hpa,
         "max_replicas": max_replicas,
         "generate_network_policy": generate_network_policy,
+        # Garantir defaults para campos que o frontend pode omitir
+        "image_tag": context.get("image_tag") or "latest",
     }
 
     files: dict[str, str] = {}

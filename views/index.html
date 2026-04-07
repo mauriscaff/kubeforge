@@ -788,6 +788,9 @@
           cpu_limit: '500m',
           memory_limit: '512Mi',
           health_check_path: '/health',
+          generate_hpa: true,
+          max_replicas: 0,
+          generate_network_policy: false,
         },
 
         get hasSecrets() {
@@ -984,6 +987,7 @@
             replicas: 2, service_type: 'ClusterIP', image_name: '', image_tag: 'latest',
             cpu_request: '250m', memory_request: '256Mi',
             cpu_limit: '500m', memory_limit: '512Mi', health_check_path: '/health',
+            generate_hpa: true, max_replicas: 0, generate_network_policy: false,
           };
         },
 
