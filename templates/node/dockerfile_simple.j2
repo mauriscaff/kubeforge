@@ -1,0 +1,16 @@
+FROM {{ base_image }}
+
+WORKDIR /app
+
+# Install dependencies first (layer cache optimization)
+COPY package*.json ./
+RUN {{ package_manager }} install --frozen-lockfile
+
+COPY . .
+
+EXPOSE {{ port }}
+
+# Run as non-root user
+USER {{ user }}
+
+CMD [{{ start_command | split | map('tojson') | join(', ') }}]

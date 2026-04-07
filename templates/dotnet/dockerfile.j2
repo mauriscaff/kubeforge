@@ -1,0 +1,27 @@
+# Stage 1: Build
+FROM {{ build_image }} AS builder
+
+WORKDIR /app
+
+COPY *.csproj ./
+RUN dotnet restore
+
+COPY . .
+RUN dotnet publish -c Release -o /publish --no-restore
+
+# Stage 2: Runtime
+FROM {{ base_image }}
+
+RUN addgroup --system appgroup && adduser --system --ingroup appgroup {{ user }}
+
+WORKDIR /app
+
+COPY --from=builder /publish .
+
+RUN chown -R {{ user }}:appgroup /app
+
+EXPOSE {{ port }}
+
+USER {{ user }}
+
+ENTRYPOINT ["dotnet", "app.dll"]

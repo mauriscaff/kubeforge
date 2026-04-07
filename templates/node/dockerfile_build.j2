@@ -1,0 +1,29 @@
+# Stage 1: Build
+FROM {{ base_image }} AS builder
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN {{ package_manager }} install --frozen-lockfile
+
+COPY . .
+RUN {{ build_command }}
+
+# Stage 2: Production
+FROM {{ base_image }} AS runner
+
+WORKDIR /app
+
+ENV NODE_ENV=production
+
+COPY --from=builder /app/package*.json ./
+RUN {{ package_manager }} install --frozen-lockfile --production
+
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
+
+EXPOSE {{ port }}
+
+USER {{ user }}
+
+CMD [{{ start_command | split | map('tojson') | join(', ') }}]

@@ -1,0 +1,21 @@
+FROM {{ base_image }}
+
+# Security: run as non-root
+RUN addgroup --system appgroup && adduser --system --ingroup appgroup {{ user }}
+
+WORKDIR /app
+
+# Install dependencies
+COPY requirements*.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+# Change ownership
+RUN chown -R {{ user }}:appgroup /app
+
+EXPOSE {{ port }}
+
+USER {{ user }}
+
+CMD [{{ start_command | split | map('tojson') | join(', ') }}]

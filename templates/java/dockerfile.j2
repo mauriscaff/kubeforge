@@ -1,0 +1,36 @@
+# Stage 1: Build
+FROM {{ build_image }} AS builder
+
+WORKDIR /app
+
+{% if build_tool == "maven" %}
+COPY pom.xml ./
+COPY src ./src
+RUN mvn package -DskipTests
+{% else %}
+COPY build.gradle* settings.gradle* gradlew ./
+COPY gradle ./gradle
+COPY src ./src
+RUN chmod +x gradlew && ./gradlew build -x test
+{% endif %}
+
+# Stage 2: Runtime
+FROM {{ base_image }}
+
+RUN addgroup --system appgroup && adduser --system --ingroup appgroup {{ user }}
+
+WORKDIR /app
+
+{% if build_tool == "maven" %}
+COPY --from=builder /app/target/*.jar app.jar
+{% else %}
+COPY --from=builder /app/build/libs/*.jar app.jar
+{% endif %}
+
+RUN chown -R {{ user }}:appgroup /app
+
+EXPOSE {{ port }}
+
+USER {{ user }}
+
+ENTRYPOINT ["java", "-jar", "app.jar"]

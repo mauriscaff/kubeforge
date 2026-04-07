@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ app_name }}
+  namespace: {{ namespace }}
+  labels:
+    app: {{ app_name }}
+    managed-by: kubeforge
+spec:
+  replicas: {{ replicas }}
+  selector:
+    matchLabels:
+      app: {{ app_name }}
+  template:
+    metadata:
+      labels:
+        app: {{ app_name }}
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+      containers:
+        - name: {{ app_name }}
+          image: {{ image_name }}:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: {{ port }}
+              protocol: TCP
+          resources:
+            requests:
+              cpu: {{ cpu_request }}
+              memory: {{ memory_request }}
+            limits:
+              cpu: {{ cpu_limit }}
+              memory: {{ memory_limit }}
+{% if env_vars %}
+          envFrom:
+            - configMapRef:
+                name: {{ app_name }}-config
+{% if secret_vars %}
+            - secretRef:
+                name: {{ app_name }}-secret
+{% endif %}
+{% endif %}
+          livenessProbe:
+            httpGet:
+              path: {{ health_check_path }}
+              port: {{ port }}
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: {{ health_check_path }}
+              port: {{ port }}
+            initialDelaySeconds: 10
+            periodSeconds: 5
+      restartPolicy: Always
