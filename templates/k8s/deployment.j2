@@ -21,7 +21,7 @@ spec:
         runAsUser: 1000
       containers:
         - name: {{ app_name }}
-          image: {{ image_name }}:latest
+          image: {{ image_name }}:{{ image_tag if image_tag else 'latest' }}
           imagePullPolicy: Always
           ports:
             - containerPort: {{ port }}

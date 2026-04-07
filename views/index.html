@@ -467,14 +467,21 @@
             </div>
           </div>
 
-          <!-- Image Registry -->
-          <div class="space-y-2">
-            <label class="text-xs font-bold uppercase tracking-widest text-slate-500 block">Nome da Imagem</label>
-            <div class="relative">
-              <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">cloud_queue</span>
-              <input x-model="form.image_name" type="text"
-                :placeholder="'registry.example.com/' + (form.app_name || 'my-app')"
-                class="w-full bg-surface-container-highest border-none rounded-lg p-4 pl-12 text-on-surface focus:ring-2 focus:ring-secondary/50 outline-none transition-all font-mono"/>
+          <!-- Image Registry + Tag -->
+          <div class="grid grid-cols-3 gap-4">
+            <div class="col-span-2 space-y-2">
+              <label class="text-xs font-bold uppercase tracking-widest text-slate-500 block">Nome da Imagem</label>
+              <div class="relative">
+                <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">cloud_queue</span>
+                <input x-model="form.image_name" type="text"
+                  :placeholder="'registry.example.com/' + (form.app_name || 'my-app')"
+                  class="w-full bg-surface-container-highest border-none rounded-lg p-4 pl-12 text-on-surface focus:ring-2 focus:ring-secondary/50 outline-none transition-all font-mono"/>
+              </div>
+            </div>
+            <div class="space-y-2">
+              <label class="text-xs font-bold uppercase tracking-widest text-slate-500 block">Tag</label>
+              <input x-model="form.image_tag" type="text" placeholder="latest"
+                class="w-full bg-surface-container-highest border-none rounded-lg p-4 text-on-surface focus:ring-2 focus:ring-secondary/50 outline-none transition-all font-mono"/>
             </div>
           </div>
 
@@ -541,7 +548,7 @@
             </div>
             <div class="p-6 font-mono text-xs leading-relaxed overflow-x-auto code-scroll">
               <div><span class="text-slate-600 mr-3">1</span><span class="text-secondary">replicas</span>: <span class="text-tertiary" x-text="form.replicas"></span></div>
-              <div><span class="text-slate-600 mr-3">2</span><span class="text-secondary">image</span>: <span class="text-primary" x-text="form.image_name || ('registry.example.com/' + (form.app_name || 'my-app'))"></span></div>
+              <div><span class="text-slate-600 mr-3">2</span><span class="text-secondary">image</span>: <span class="text-primary" x-text="(form.image_name || ('registry.example.com/' + (form.app_name || 'my-app'))) + ':' + (form.image_tag || 'latest')"></span></div>
               <div><span class="text-slate-600 mr-3">3</span><span class="text-secondary">cpu</span>: <span class="text-tertiary" x-text="form.cpu_request + ' / ' + form.cpu_limit"></span></div>
               <div><span class="text-slate-600 mr-4">4</span><span class="text-secondary">memory</span>: <span class="text-tertiary" x-text="form.memory_request + ' / ' + form.memory_limit"></span></div>
             </div>
@@ -775,6 +782,7 @@
           replicas: 2,
           service_type: 'ClusterIP',
           image_name: '',
+          image_tag: 'latest',
           cpu_request: '250m',
           memory_request: '256Mi',
           cpu_limit: '500m',
@@ -973,7 +981,7 @@
             port: 3000, has_build_step: false, start_command: '', build_command: '',
             base_image: '', build_image: '', package_manager: 'npm', user: 'appuser',
             env_vars: [],
-            replicas: 2, service_type: 'ClusterIP', image_name: '',
+            replicas: 2, service_type: 'ClusterIP', image_name: '', image_tag: 'latest',
             cpu_request: '250m', memory_request: '256Mi',
             cpu_limit: '500m', memory_limit: '512Mi', health_check_path: '/health',
           };

@@ -128,6 +128,7 @@ class GenerateRequest(BaseModel):
     replicas: int = 2
     service_type: str = "ClusterIP"
     image_name: str = ""
+    image_tag: str = "latest"
     cpu_request: str = "250m"
     memory_request: str = "256Mi"
     cpu_limit: str = "500m"
@@ -169,6 +170,7 @@ async def generate(req: GenerateRequest):
         "replicas": req.replicas,
         "service_type": req.service_type,
         "image_name": req.image_name,
+        "image_tag": req.image_tag,
         "port": req.port,
         "cpu_request": req.cpu_request,
         "memory_request": req.memory_request,
