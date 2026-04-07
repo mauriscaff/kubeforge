@@ -43,6 +43,7 @@ def generate(context: dict) -> dict[str, str]:
     max_replicas = context.get("max_replicas", 0)
     if max_replicas == 0:
         max_replicas = replicas * 3
+    generate_network_policy = context.get("generate_network_policy", False)
 
     ctx = {
         **context,
@@ -50,6 +51,7 @@ def generate(context: dict) -> dict[str, str]:
         "secret_vars": secret_vars,
         "generate_hpa": generate_hpa,
         "max_replicas": max_replicas,
+        "generate_network_policy": generate_network_policy,
     }
 
     files: dict[str, str] = {}
@@ -64,6 +66,9 @@ def generate(context: dict) -> dict[str, str]:
 
     if generate_hpa:
         files["hpa.yaml"] = env.get_template("hpa.j2").render(**ctx)
+
+    if generate_network_policy:
+        files["networkpolicy.yaml"] = env.get_template("networkpolicy.j2").render(**ctx)
 
     files["kustomization.yaml"] = env.get_template("kustomization.j2").render(**ctx)
 

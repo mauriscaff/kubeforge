@@ -136,6 +136,7 @@ class GenerateRequest(BaseModel):
     health_check_path: str = "/health"
     generate_hpa: bool = True
     max_replicas: int = 0
+    generate_network_policy: bool = False
 
 
 @app.post("/generate")
@@ -182,6 +183,7 @@ async def generate(req: GenerateRequest):
         "health_check_path": req.health_check_path,
         "generate_hpa": req.generate_hpa,
         "max_replicas": req.max_replicas,
+        "generate_network_policy": req.generate_network_policy,
     }
     try:
         k8s_files = k8s_gen.generate(k8s_ctx)

@@ -15,6 +15,9 @@ resources:
 {% if generate_hpa %}
   - hpa.yaml
 {% endif %}
+{% if generate_network_policy %}
+  - networkpolicy.yaml
+{% endif %}
 
 commonLabels:
   app: {{ app_name }}
