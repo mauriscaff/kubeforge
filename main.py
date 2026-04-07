@@ -243,10 +243,11 @@ async def _prepare_source(
     if source_type == "folder":
         if not folder_path:
             raise ValueError("O campo folder_path é obrigatório para source_type=folder.")
-        if not Path(folder_path).is_dir():
-            raise ValueError(f"Diretório não encontrado: {folder_path}")
+        resolved = Path(folder_path.strip()).resolve()
+        if not resolved.is_dir():
+            raise ValueError(f"Diretório não encontrado: {resolved}")
         # Use directly — no copy needed for analysis
-        return folder_path
+        return str(resolved)
 
     elif source_type == "zip":
         if not file:
@@ -269,6 +270,12 @@ async def _prepare_source(
     elif source_type == "git":
         if not git_url:
             raise ValueError("O campo git_url é obrigatório para source_type=git.")
+        git_url = git_url.strip()
+        if not (git_url.startswith("http://") or git_url.startswith("https://") or git_url.startswith("git@")):
+            raise ValueError(
+                "git_url deve ser uma URL válida (https:// ou git@). "
+                "Para pastas locais, use source_type='folder'."
+            )
         try:
             import git as gitpython
             loop = asyncio.get_event_loop()
