@@ -18,7 +18,7 @@ from pydantic import BaseModel
 
 from analyzer import detector, parser
 from analyzer.rules import FRAMEWORK_OVERRIDES, K8S_DEFAULTS, LANGUAGE_DEFAULTS
-from generator import dockerfile_gen, k8s_gen
+from generator import dockerfile_gen, dockerignore_gen, k8s_gen
 
 app = FastAPI(title="KubeForge", version="1.0.0")
 
@@ -187,7 +187,12 @@ async def generate(req: GenerateRequest):
     # --- Scripts ---
     scripts = _generate_scripts(req.app_name, req.image_name, req.namespace)
 
-    files = {"Dockerfile": dockerfile_content, **k8s_files, **scripts}
+    files = {
+        "Dockerfile": dockerfile_content,
+        ".dockerignore": dockerignore_gen.generate(req.language),
+        **k8s_files,
+        **scripts,
+    }
 
     return {"files": files}
 
