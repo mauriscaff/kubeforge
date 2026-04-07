@@ -4,12 +4,13 @@ metadata:
   name: {{ app_name }}-netpol
   namespace: {{ namespace }}
   labels:
-    app: {{ app_name }}
-    managed-by: kubeforge
+    app.kubernetes.io/name: {{ app_name }}
+    app.kubernetes.io/component: backend
+    app.kubernetes.io/managed-by: kubeforge
 spec:
   podSelector:
     matchLabels:
-      app: {{ app_name }}
+      app.kubernetes.io/name: {{ app_name }}
   policyTypes:
     - Ingress
     - Egress

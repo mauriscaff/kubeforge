@@ -4,17 +4,22 @@ metadata:
   name: {{ app_name }}
   namespace: {{ namespace }}
   labels:
-    app: {{ app_name }}
-    managed-by: kubeforge
+    app.kubernetes.io/name: {{ app_name }}
+    app.kubernetes.io/version: {{ image_tag | default('latest') }}
+    app.kubernetes.io/component: backend
+    app.kubernetes.io/managed-by: kubeforge
 spec:
   replicas: {{ replicas }}
   selector:
     matchLabels:
-      app: {{ app_name }}
+      app.kubernetes.io/name: {{ app_name }}
   template:
     metadata:
       labels:
-        app: {{ app_name }}
+        app.kubernetes.io/name: {{ app_name }}
+        app.kubernetes.io/version: {{ image_tag | default('latest') }}
+        app.kubernetes.io/component: backend
+        app.kubernetes.io/managed-by: kubeforge
     spec:
       securityContext:
         runAsNonRoot: true

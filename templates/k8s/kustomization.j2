@@ -20,5 +20,5 @@ resources:
 {% endif %}
 
 commonLabels:
-  app: {{ app_name }}
-  managed-by: kubeforge
+  app.kubernetes.io/name: {{ app_name }}
+  app.kubernetes.io/managed-by: kubeforge
